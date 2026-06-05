@@ -1,0 +1,29 @@
+data(framingham, package = "riskCommunicator")
+
+vars <- c("AGE", "SEX", "BMI", "CURSMOKE",
+          "TOTCHOL", "SYSBP", "GLUCOSE", "ANYCHD")
+
+fram <- as.data.frame(framingham) %>%
+  filter(PERIOD == 1) %>%
+  select(all_of(vars)) %>%
+  na.omit()
+
+cat("Dimensions:", dim(fram), "\n")
+summary(fram)
+
+# Sufficient statistics
+suffStat <- list(C = cor(fram), n = nrow(fram))
+
+# PC
+pc_fit <- pc(suffStat, gaussCItest, alpha = 0.05,
+             labels = vars, verbose = FALSE)
+
+# GES
+score  <- new("GaussL0penObsScore", data = as.matrix(fram))
+ges_fit <- ges(score)
+
+# Plot
+par(mfrow = c(1, 2))
+plot(pc_fit,           main = "PC — CPDAG")
+plot(ges_fit$essgraph, main = "GES — CPDAG")
+par(mfrow = c(1, 1))
