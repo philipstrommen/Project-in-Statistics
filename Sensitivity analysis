@@ -1,0 +1,37 @@
+alphas <- c(0.01, 0.05, 0.10)
+
+par(mfrow = c(1, 3))
+for(a in alphas) {
+  fit <- pc(suffStat, gaussCItest, alpha = a,
+            labels = vars, verbose = FALSE)
+  plot(fit, main = paste0("PC  α = ", a))
+}
+par(mfrow = c(1, 1))
+
+cat("=== PC edge counts by alpha ===\n")
+for(a in alphas) {
+  fit    <- pc(suffStat, gaussCItest, alpha = a,
+               labels = vars, verbose = FALSE)
+  amat   <- as(fit@graph, "matrix")
+  nedges <- sum(amat > 0) / 2
+  cat("alpha =", a, "→", nedges, "edges\n")
+
+penalties <- c(0.5, 1, 2)
+
+par(mfrow = c(1, 3))
+for(pen in penalties) {
+  score_p <- new("GaussL0penObsScore", data = as.matrix(fram),
+                 lambda = pen * 0.5 * log(nrow(fram)))
+  ges_p   <- ges(score_p)
+  plot(ges_p$essgraph, main = paste0("GES  penalty × ", pen))
+}
+par(mfrow = c(1, 1))
+
+cat("=== GES edge counts by penalty multiplier ===\n")
+for(pen in penalties) {
+  score_p <- new("GaussL0penObsScore", data = as.matrix(fram),
+                 lambda = pen * 0.5 * log(nrow(fram)))
+  ges_p   <- ges(score_p)
+  amat    <- as(ges_p$essgraph, "matrix")
+  nedges  <- sum(amat > 0) / 2
+  cat("penalty ×", pen, "→", nedges, "edges\n")
