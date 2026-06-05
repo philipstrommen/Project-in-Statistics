@@ -1,0 +1,44 @@
+set.seed(42)
+B    <- 200
+n    <- nrow(fram)
+p    <- ncol(fram)
+vars <- names(fram)
+
+pc_counts  <- matrix(0, p, p, dimnames = list(vars, vars))
+ges_counts <- matrix(0, p, p, dimnames = list(vars, vars))
+
+for(b in 1:B) {
+  idx  <- sample(n, n, replace = TRUE)
+  boot <- fram[idx, ]
+
+  # PC bootstrap
+  suff <- list(C = cor(boot), n = n)
+  pc_b <- pc(suff, gaussCItest, alpha = 0.05,
+             labels = vars, verbose = FALSE)
+  amat_pc    <- as(pc_b@graph, "matrix")
+  pc_counts  <- pc_counts + (amat_pc > 0)
+
+  # GES bootstrap
+  score_b    <- new("GaussL0penObsScore", data = as.matrix(boot))
+  ges_b      <- ges(score_b)
+  amat_ges   <- as(ges_b$essgraph, "matrix")
+  ges_counts <- ges_counts + (amat_ges > 0)
+}
+
+# Stability
+pc_stab  <- pc_counts  / B
+ges_stab <- ges_counts / B
+
+pc_stab_sym  <- pmax(pc_stab,  t(pc_stab))
+ges_stab_sym <- pmax(ges_stab, t(ges_stab))
+
+pc_upper  <- pc_stab_sym
+ges_upper <- ges_stab_sym
+pc_upper[lower.tri(pc_upper,   diag = TRUE)] <- NA
+ges_upper[lower.tri(ges_upper, diag = TRUE)] <- NA
+
+cat("=== PC bootstrap stability ===\n")
+print(round(pc_upper, 2))
+
+cat("\n=== GES bootstrap stability ===\n")
+print(round(ges_upper, 2))
