@@ -1,2 +1,2 @@
-# Project-in-Statistics
-Code for Project in Statistics
+Please run all code from top to bottom
+
