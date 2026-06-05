@@ -1,0 +1,38 @@
+idx_v   <- setNames(seq_along(vars), vars)
+cov_mat <- cov(fram)
+
+# Effects on ANYCHD from each continuous risk factor
+exposures <- c("SYSBP", "TOTCHOL", "BMI", "GLUCOSE", "AGE")
+
+cat("=== IDA causal effects on ANYCHD ===\n")
+cat("(from PC CPDAG)\n\n")
+for(xvar in exposures) {
+  eff <- ida(
+    x.pos    = idx_v[xvar],
+    y.pos    = idx_v["ANYCHD"],
+    mcov     = cov_mat,
+    graphEst = pc_fit@graph,
+    method   = "local"
+  )
+  cat(xvar, "→ ANYCHD:\n")
+  cat("  possible effects:", round(eff, 4), "\n")
+  cat("  min:", round(min(abs(eff)), 4),
+      " max:", round(max(abs(eff)), 4), "\n\n")
+}
+
+# Also run IDA from GES CPDAG for comparison
+cat("=== IDA causal effects on ANYCHD ===\n")
+cat("(from GES CPDAG)\n\n")
+for(xvar in exposures) {
+  eff <- ida(
+    x.pos    = idx_v[xvar],
+    y.pos    = idx_v["ANYCHD"],
+    mcov     = cov_mat,
+    graphEst = as(ges_fit$essgraph, "graphNEL"),
+    method   = "local"
+  )
+  cat(xvar, "→ ANYCHD:\n")
+  cat("  possible effects:", round(eff, 4), "\n")
+  cat("  min:", round(min(abs(eff)), 4),
+      " max:", round(max(abs(eff)), 4), "\n\n")
+}
