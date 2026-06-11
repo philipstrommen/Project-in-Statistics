@@ -8,7 +8,7 @@ for(a in alphas) {
 }
 par(mfrow = c(1, 1))
 
-cat("=== PC edge counts by alpha ===\n")
+cat(" PC edge counts by alpha \n")
 for(a in alphas) {
   fit    <- pc(suffStat, gaussCItest, alpha = a,
                labels = vars, verbose = FALSE)
